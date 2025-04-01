@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tomato Pile - Lofi Pomo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+    <style>
+      canvas {
+        position: absolute;
+        top: 0;
+        left: 0;
+        pointer-events: none;
+        z-index: 10;
+      }
+    </style>
+  </head>
+
+  <body
+    class="bg-red-50 flex flex-col items-center justify-center min-h-screen p-4 relative overflow-hidden"
+  >
+    <div class="text-center space-y-4 z-20">
+      <h1 class="text-4xl font-bold">🍅 Tomato Pile</h1>
+      <div id="timer" class="text-6xl font-mono">25:00</div>
+
+      <div class="space-x-2">
+        <button id="start" class="px-4 py-2 bg-red-500 text-white rounded">
+          Start
+        </button>
+        <button id="reset" class="px-4 py-2 bg-gray-300 rounded">Reset</button>
+      </div>
+    </div>
+
+    <canvas id="tomatoCanvas"></canvas>
+
+    <script>
+      let minutes = 1;
+      let seconds = 0;
+      let timerInterval;
+      const timerEl = document.getElementById("timer");
+
+      document.getElementById("start").onclick = () => {
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => {
+          if (seconds === 0) {
+            if (minutes === 0) {
+              clearInterval(timerInterval);
+              spawnTomato();
+              return;
+            }
+            minutes--;
+            seconds = 59;
+          } else {
+            seconds--;
+          }
+          timerEl.textContent = `${String(minutes).padStart(2, "0")}:${String(
+            seconds
+          ).padStart(2, "0")}`;
+        }, 1000);
+      };
+
+      document.getElementById("reset").onclick = () => {
+        clearInterval(timerInterval);
+        minutes = 25;
+        seconds = 0;
+        timerEl.textContent = "25:00";
+      };
+
+      // 🍅 Matter.js Setup
+      const { Engine, Render, Runner, Bodies, Composite } = Matter;
+      const engine = Engine.create();
+      const world = engine.world;
+
+      const canvas = document.getElementById("tomatoCanvas");
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+
+      const render = Render.create({
+        canvas: canvas,
+        engine: engine,
+        options: {
+          width: canvas.width,
+          height: canvas.height,
+          wireframes: false,
+          background: "transparent",
+        },
+      });
+
+      Render.run(render);
+      Runner.run(Runner.create(), engine);
+
+      // Ground
+      const ground = Bodies.rectangle(
+        canvas.width / 2,
+        canvas.height - 10,
+        canvas.width,
+        20,
+        { isStatic: true }
+      );
+      Composite.add(world, [ground]);
+
+      function spawnTomato() {
+        const tomato = Bodies.circle(canvas.width - 100, -50, 16, {
+          restitution: 0.5,
+          render: {
+            fillStyle: "#e3342f",
+          },
+        });
+        Composite.add(world, [tomato]);
+      }
+    </script>
+  </body>
+</html>

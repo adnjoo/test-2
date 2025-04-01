@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tomato Pile - Lofi Pomo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 10;
+        }
+    </style>
+</head>
+
+<body class="bg-red-50 flex flex-col items-center justify-center min-h-screen p-4 relative overflow-hidden">
+
+    <div class="text-center space-y-4">
+        <h1 class="text-4xl font-bold">🍅 Tomato Pile</h1>
+        <div id="timer" class="text-6xl font-mono">1:00</div>
+
+        <div class="space-x-2">
+            <button id="start" class="px-4 py-2 bg-red-500 text-white rounded">Start</button>
+            <button id="reset" class="px-4 py-2 bg-gray-300 rounded">Reset</button>
+        </div>
+    </div>
+
+    <canvas id="tomatoCanvas"></canvas>
+
+    <script>
+        let minutes = 1;
+        let seconds = 0;
+        let timerInterval;
+        const timerEl = document.getElementById('timer');
+
+        document.getElementById('start').onclick = () => {
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                if (seconds === 0) {
+                    if (minutes === 0) {
+                        clearInterval(timerInterval);
+                        spawnTomato();
+                        return;
+                    }
+                    minutes--;
+                    seconds = 59;
+                } else {
+                    seconds--;
+                }
+                timerEl.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            }, 1000);
+        };
+
+        document.getElementById('reset').onclick = () => {
+            clearInterval(timerInterval);
+            minutes = 25;
+            seconds = 0;
+            timerEl.textContent = "25:00";
+        };
+
+        // 🍅 Basic falling tomato
+        const canvas = document.getElementById('tomatoCanvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        let tomatoes = [];
+
+        function spawnTomato() {
+            tomatoes.push({
+                x: canvas.width - 100,
+                y: -50,
+                vy: 0,
+                r: 16
+            });
+        }
+
+        function update() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            tomatoes.forEach(t => {
+                t.vy += 0.5; // gravity
+                t.y += t.vy;
+                if (t.y > canvas.height - 50) {
+                    t.y = canvas.height - 50;
+                    t.vy *= -0.3; // simple bounce
+                }
+                ctx.beginPath();
+                ctx.arc(t.x, t.y, t.r, 0, Math.PI * 2);
+                ctx.fillStyle = "#e3342f"; // tomato red
+                ctx.fill();
+                ctx.closePath();
+            });
+            requestAnimationFrame(update);
+        }
+
+        update();
+    </script>
+
+</body>
+
+</html>
